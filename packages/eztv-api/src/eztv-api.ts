@@ -5,15 +5,17 @@ import bytes from 'bytes'
 
 import slugMap from './slug-map'
 import imdbMap from './imdb-map'
-import { name } from '../package.json'
-import { Show, ShowWithEpisodes } from './interfaces'
+import {name} from '../package.json'
+import {Show, ShowWithEpisodes} from './interfaces'
+import {load} from "cheerio";
 
 /**
  * An EZTV API wrapper to get data from eztv.ag.
  * @type {EztvApi}
  */
-export class EztvApi {
+type CheerioRoot = ReturnType<typeof load>;
 
+export class EztvApi {
   /**
    * The base url of eztv.
    * @type {string}
@@ -39,7 +41,7 @@ export class EztvApi {
    * @param {!Object} config={} - The configuration object for the module.
    * @param {!string} baseUrl=https://eztv.ag/ - The base url of eztv.
    */
-  constructor({ baseUrl = 'https://eztv.re/' } = {}) {
+  constructor({baseUrl = 'https://eztv.re/'} = {}) {
     this.baseUrl = baseUrl
   }
 
@@ -50,12 +52,12 @@ export class EztvApi {
    * @returns {Promise<Function, Error>} - The response body wrapped in
    * cheerio.
    */
-  private get(endpoint: string): Promise<cheerio.Root | string> {
+  private get(endpoint: string): Promise<CheerioRoot | string> {
     const uri = `${this.baseUrl}${endpoint}`
 
     this.debug(`Making request to: '${uri}'`)
 
-    return got.get(uri).then(({ body }) => {
+    return got.get(uri).then(({body}) => {
       return cheerio.load(body)
     })
   }
@@ -165,8 +167,8 @@ export class EztvApi {
     return this.get('showlist/').then(($) => {
       const regex = /\/shows\/(.*)\/(.*)\//
 
-      return ($ as cheerio.Root)('.thread_link').map(function () {
-        const entry = ($ as cheerio.Root)(this)
+      return ($ as CheerioRoot)('.thread_link').map(function () {
+        const entry = ($ as CheerioRoot)(this)
         const href = entry.attr('href')
 
         const title = entry.text()

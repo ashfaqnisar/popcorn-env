@@ -1,15 +1,13 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { checkSync } from 'diskusage'
+import {HttpService, Inject, Injectable} from '@nestjs/common'
+import {InjectModel} from '@nestjs/mongoose'
 import * as getFolderSize from 'get-folder-size'
-import { formatBytes } from '@pct-org/torrent/utils'
-import { MovieModel } from '@pct-org/types/movie'
-import { ShowModel } from '@pct-org/types/show'
-import { EpisodeModel } from '@pct-org/types/episode'
+import {MovieModel} from '@pct-org/types/movie'
+import {ShowModel} from '@pct-org/types/show'
+import {EpisodeModel} from '@pct-org/types/episode'
 
-import { Status } from './status.object-type'
-import { StatusScraper } from './status-scraper.object-type'
-import { ConfigService } from '../shared/config/config.service'
+import {Status} from './status.object-type'
+import {StatusScraper} from './status-scraper.object-type'
+import {ConfigService} from '../shared/config/config.service'
 
 @Injectable()
 export class StatusService {
@@ -30,30 +28,16 @@ export class StatusService {
   private readonly httpService: HttpService
 
   public async getStatus(): Promise<Status> {
-    const disk = await checkSync(
-      this.configService.get(ConfigService.DOWNLOAD_LOCATION)
-    )
+
 
     const folderSize = await this.getFolderSize()
 
-    const freePercentage = parseFloat(((disk.available / disk.total) * 100).toFixed(2))
-    const usedPercentage = parseFloat(((folderSize / disk.total) * 100).toFixed(2))
-    const sizePercentage = parseFloat((((disk.total - disk.available - folderSize) / disk.total) * 100).toFixed(2))
 
     return {
       version: this.configService.version,
       totalMovies: await this.movieModel.countDocuments(),
       totalShows: await this.showModel.countDocuments(),
       totalEpisodes: await this.episodesModel.countDocuments(),
-      disk: {
-        free: formatBytes(disk.available),
-        used: formatBytes(folderSize),
-        size: formatBytes(disk.total),
-
-        freePercentage,
-        usedPercentage,
-        sizePercentage
-      }
     }
   }
 
